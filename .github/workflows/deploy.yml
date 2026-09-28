@@ -1,0 +1,61 @@
+name: Deploy Hidden Site
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Prepare deployment folder
+        run: mkdir -p _site
+
+      - name: Rebuild index.html from 11 parts
+        env:
+          P1: ${{ secrets.INDEX_PART_1 }}
+          P2: ${{ secrets.INDEX_PART_2 }}
+          P3: ${{ secrets.INDEX_PART_3 }}
+          P4: ${{ secrets.INDEX_PART_4 }}
+          P5: ${{ secrets.INDEX_PART_5 }}
+          P6: ${{ secrets.INDEX_PART_6 }}
+          P7: ${{ secrets.INDEX_PART_7 }}
+          P8: ${{ secrets.INDEX_PART_8 }}
+          P9: ${{ secrets.INDEX_PART_9 }}
+          P10: ${{ secrets.INDEX_PART_10 }}
+          P11: ${{ secrets.INDEX_PART_11 }}
+        run: |
+          printf "%s%s%s%s%s%s%s%s%s%s%s" \
+            "$P1" "$P2" "$P3" "$P4" "$P5" "$P6" \
+            "$P7" "$P8" "$P9" "$P10" "$P11" \
+            > index_b64.txt
+          echo "حجم Base64 المدمج: $(wc -c < index_b64.txt) بايت"
+          base64 -d index_b64.txt > _site/index.html
+          echo "✅ تم بناء index.html"
+          echo "الحجم: $(wc -c < _site/index.html) بايت"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
