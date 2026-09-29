@@ -30,8 +30,8 @@ jobs:
       - name: Prepare deployment folder
         run: mkdir -p _site
 
-      # إعادة بناء index.html من الأجزاء الـ11
-      - name: Rebuild index.html from 11 parts
+      # إعادة بناء index.html من الأجزاء الـ12
+      - name: Rebuild index.html from 12 parts
         env:
           P1: ${{ secrets.INDEX_PART_1 }}
           P2: ${{ secrets.INDEX_PART_2 }}
@@ -44,11 +44,12 @@ jobs:
           P9: ${{ secrets.INDEX_PART_9 }}
           P10: ${{ secrets.INDEX_PART_10 }}
           P11: ${{ secrets.INDEX_PART_11 }}
+          P12: ${{ secrets.INDEX_PART_12 }}
 
         run: |
-          printf "%s%s%s%s%s%s%s%s%s%s%s" \
+          printf "%s%s%s%s%s%s%s%s%s%s%s%s" \
             "$P1" "$P2" "$P3" "$P4" "$P5" "$P6" \
-            "$P7" "$P8" "$P9" "$P10" "$P11" \
+            "$P7" "$P8" "$P9" "$P10" "$P11" "$P12" \
             > index_b64.txt
 
           echo "حجم Base64 المدمج: $(wc -c < index_b64.txt) بايت"
