@@ -22,9 +22,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # تحميل ملفات المستودع، ومنها ملفات التوقيعات
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # إنشاء مجلد النشر
       - name: Prepare deployment folder
         run: mkdir -p _site
 
+      # إعادة بناء index.html من الأجزاء الـ11
       - name: Rebuild index.html from 11 parts
         env:
           P1: ${{ secrets.INDEX_PART_1 }}
@@ -38,26 +44,44 @@ jobs:
           P9: ${{ secrets.INDEX_PART_9 }}
           P10: ${{ secrets.INDEX_PART_10 }}
           P11: ${{ secrets.INDEX_PART_11 }}
+
         run: |
           printf "%s%s%s%s%s%s%s%s%s%s%s" \
             "$P1" "$P2" "$P3" "$P4" "$P5" "$P6" \
             "$P7" "$P8" "$P9" "$P10" "$P11" \
             > index_b64.txt
+
           echo "حجم Base64 المدمج: $(wc -c < index_b64.txt) بايت"
+
           base64 -d index_b64.txt > _site/index.html
+
           echo "✅ تم بناء index.html"
           echo "الحجم: $(wc -c < _site/index.html) بايت"
 
+      # نسخ ملفات التوقيعات إلى مجلد الموقع
+      - name: Copy signature files
+        run: |
+          cp sign_abdulbasit.png _site/
+          cp sign_ismail.png _site/
+          cp sign_Othman.png _site/
+
+          echo "✅ تم نسخ ملفات التوقيعات"
+          echo "📁 الملفات الموجودة في مجلد النشر:"
+          ls -lh _site/
+
+      # إعداد GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
+      # رفع الموقع
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
 
+      # نشر الموقع
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
